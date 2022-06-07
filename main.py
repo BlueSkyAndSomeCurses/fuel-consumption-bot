@@ -11,11 +11,14 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name("master-crossing-
 file = authorize(credentials)
 
 sheet = file.open("fuel testing")
+print(sheet.worksheets())
+datasheet = sheet.worksheet("database")
 sheet = sheet.sheet1
 
 
+
 arrmsg = "я приїхав 🚛"
-inc = 1
+inc = int(datasheet.cell(1,7).value)
 onlineusers = dict()
 
 def driver(update, context, user):
@@ -78,6 +81,7 @@ def mainfunc(update, context):
         sheet.update_cell(onlineusers[user][0], 2, str(date.today()))
         sheet.update_cell(onlineusers[user][0], 3, str(datetime.now(pytz.timezone('Europe/Kiev')).strftime("%H:%M")))
         context.bot.send_message(chat_id=user, text = "Вкажіть своє ім'я")
+        datasheet.update_cell(1,7, str(inc))
         return
     func[onlineusers[user][1]-4](update,context,user)
     
