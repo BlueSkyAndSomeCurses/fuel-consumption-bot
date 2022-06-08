@@ -35,9 +35,10 @@ def driver(update, context, user):
     sheet.update_cell(onlineusers[user][0], onlineusers[user][1], msg)
     database[user][0] = msg
     datasheet.update_cell(database[user][2], 2, msg)
-    update.message.reply_text("Вкажіть назву авто")
     onlineusers[user][1]+=1    
-
+    buttons = [[InlineKeyboardButton("aboba", callback_data = "fuzbeez")], [InlineKeyboardButton("asdfzxcvbee", callback_data = "asdf")]]
+    context.bot.send_message(chat_id=update.effective_chat.id, text = "Вкажіть назву авто", reply_markup=InlineKeyboardMarkup(buttons))
+    
 def car(update, context, user):
     msg = update.message.text
     sheet.update_cell(onlineusers[user][0], onlineusers[user][1], msg)
