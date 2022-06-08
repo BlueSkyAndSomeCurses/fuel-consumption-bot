@@ -28,6 +28,8 @@ while datasheet.cell(count, 1).value:
 
 
 
+
+
 def driver(update, context, user):
     msg = update.message.text
     sheet.update_cell(onlineusers[user][0], onlineusers[user][1], msg)
@@ -56,7 +58,7 @@ def refill(update, context, user):
 
 def fuelcard(update, context, user):
     sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
-    update.message.reply_text("Вид палива ДП/ДП+")
+    context.bot.send_message(chat_id=update.effective_chat.id, text = "Вид палива", reply_markup=ReplyKeyboardMarkup([[KeyboardButton("ДП")],[KeyboardButton("ДП+")],[KeyboardButton("A95")],[KeyboardButton("A95+")]]))
     onlineusers[user][1]+=1    
 
 def fueltype(update, context, user):
@@ -76,7 +78,7 @@ def remainder(update, context, user):
 
 def clientsamount(update, context, user):
     sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
-    update.message.reply_text("Дякую")
+    context.bot.send_message(chat_id=update.effective_chat.id, text = "Дякую", reply_markup=ReplyKeyboardMarkup([[arrmsg]]))
     onlineusers.pop(user)
 
 func = [driver, car, route, refill, fuelcard, fueltype,result, remainder,  clientsamount]
@@ -99,6 +101,7 @@ def mainfunc(update, context):
             sheet.update_cell(onlineusers[user][0], 4, database[user][0])
             sheet.update_cell(onlineusers[user][0], 5, database[user][1])
             onlineusers[user][1]= 6
+            update.message.reply_text("Вкажіть маршрут")
         else:    
             update.message.reply_text("Вкажіть своє ім'я")
             count = int(datasheet.cell(1,8).value)
