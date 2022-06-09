@@ -59,21 +59,8 @@ rots.clear()
 
 count = 1
 while datasheet.cell(count, 1).value:
-    database[datasheet.cell(count,1).value] = [datasheet.cell(count,2).value,datasheet.cell(count,3).value, count] 
+    database[datasheet.cell(count,1).value] = [datasheet.cell(count,2).value,datasheet.cell(count,3).value, count, [datasheet.cell(count, 4).value], [datasheet.cell(count,5).value]] 
     count+=1
-
-
-
-def binarysearch(word, left, right):
-    mid = (left+right)//2
-    looking = lower(round[mid].replace(" ", ""))
-    if word > routes[mid]:
-        return binarysearch(word, mid+1, right)
-    elif word < round[mid]:
-        return binarysearch(word, left, mid -1)
-    else:
-        return routes[mid]
-
 
 
 def driver(update, context, user):
@@ -112,19 +99,40 @@ def error(update,context,user):
 
 def route(update, context, user):
     text = (update.message.text).replace(" ","").replace("-","").lower()  
-    print(text)
     if text in routes:
-        sheet.update_cell(onlineusers[user][0], 6, routes[text])
+        text = routes[text]
+        sheet.update_cell(onlineusers[user][0], 6, text)
+        datasheet.update_cell(database[user][2], 4, text)
+        datanames = database[user][3]
+        if not text in datanames:
+            if len(datanames)==5:
+                datanames.pop(0)
+            datanames.append(text)
+                
+            
     update.message.reply_text("Заправка денна")
     onlineusers[user][1]+=1    
 
 def refill(update, context, user):
     sheet.update_cell(onlineusers[user][0], 7, update.message.text)
-    update.message.reply_text("Номер паливної картки")
+    if (user in database) and len(database[user][4]): 
+        datanumbers = database[user][4]
+        buttons = []
+        for numbers in datanumbers:
+            buttons.append([KeyboardButton(numbers)])
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Номер паливної картки", reply_markup=ReplyKeyboardMarkup(buttons))
+    else:
+        update.message.reply_text("Номер паливної картки")
     onlineusers[user][1]+=1    
 
 def fuelcard(update, context, user):
-    sheet.update_cell(onlineusers[user][0], 8, update.message.text)
+    text = update.message.text
+    sheet.update_cell(onlineusers[user][0], 8, text)
+    datasheet.update_cell(database[user][2], 5, text)
+    datanumbers = database[user][4]
+    if len(datanumbers)==4:
+        datanumbers.pop(0)
+    datanumbers.append(text)
     context.bot.send_message(chat_id=update.effective_chat.id, text = "Вид палива", reply_markup=ReplyKeyboardMarkup([[KeyboardButton("ДП")],[KeyboardButton("ДП+")],[KeyboardButton("A95")],[KeyboardButton("A95+")]]))
     onlineusers[user][1]+=1    
 
@@ -151,7 +159,9 @@ def remainder(update, context, user):
 def clientsamount(update, context, user):
     sheet.update_cell(onlineusers[user][0], 12, update.message.text)
     context.bot.send_message(chat_id=update.effective_chat.id, text = "Дякую", reply_markup=ReplyKeyboardMarkup([[arrmsg]]))
+    print(onlineusers)
     onlineusers.pop(user)
+    print(database)
 
 func = [driver, error, route, refill, fuelcard, fueltype,result, remainder,  clientsamount]
 
@@ -173,11 +183,15 @@ def mainfunc(update, context):
             sheet.update_cell(onlineusers[user][0], 4, database[user][0])
             sheet.update_cell(onlineusers[user][0], 5, database[user][1])
             onlineusers[user][1]= 6
-            update.message.reply_text("Вкажіть маршрут")
+            buttons = []
+            for routename in database[user][3]:
+                buttons.append([KeyboardButton(routename)])
+            
+            context.bot.send_message(chat_id=update.effective_chat.id, text = "Вкажіть Маршрут", reply_markup = ReplyKeyboardMarkup(buttons))
         else:    
             update.message.reply_text("Вкажіть своє ім'я")
             count = int(datasheet.cell(1,8).value)
-            database[user] = ["","", count]
+            database[user] = ["","", count, [],[]]
             datasheet.update_cell(count,1, user)
             count+=1
 
