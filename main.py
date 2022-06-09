@@ -20,6 +20,7 @@ arrmsg = "я приїхав 🚛"
 inc = int(datasheet.cell(1,7).value)
 onlineusers = dict()
 database = dict()
+routes = dict()
 
 cars = [
     [[InlineKeyboardButton("Volvo AT1609BI", callback_data = "Volvo AT1609BI")],
@@ -44,7 +45,17 @@ cars = [
     [InlineKeyboardButton("Назад", callback_data = "back")]
     ],
     
-        ]
+    ]
+
+rots = open("rot.txt", "r").readlines()
+
+
+for i in range(len(rots)):
+    rots[i] = rots[i][0:-1]
+    routes[rots[i].replace(" ","").replace("-","").lower()] = rots[i]
+
+print(routes)
+rots.clear()
 
 count = 1
 while datasheet.cell(count, 1).value:
@@ -52,6 +63,16 @@ while datasheet.cell(count, 1).value:
     count+=1
 
 
+
+def binarysearch(word, left, right):
+    mid = (left+right)//2
+    looking = lower(round[mid].replace(" ", ""))
+    if word > routes[mid]:
+        return binarysearch(word, mid+1, right)
+    elif word < round[mid]:
+        return binarysearch(word, left, mid -1)
+    else:
+        return routes[mid]
 
 
 
@@ -84,53 +105,55 @@ def carChoosing(update, context):
         onlineusers[user][1]+=1    
         
         
-    
-def car(update, context, user):
-    msg = update.message.text
-    sheet.update_cell(onlineusers[user][0], onlineusers[user][1], msg)
-    database[user][0] = msg
-    datasheet.update_cell(database[user][2], 3, msg)
-    update.message.reply_text("Вкажіть маршрут")
-    onlineusers[user][1]+=1    
 
-
+def error(update,context,user):
+    update.message.reply_text("Виберіть машину!")
+    context.bot.send_message(chat_id=update.effective_chat.id, text = "Вкажіть назву авто", reply_markup=InlineKeyboardMarkup(cars[0]))
 
 def route(update, context, user):
-    sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
+    text = (update.message.text).replace(" ","").replace("-","").lower()  
+    print(text)
+    if text in routes:
+        sheet.update_cell(onlineusers[user][0], 6, routes[text])
     update.message.reply_text("Заправка денна")
     onlineusers[user][1]+=1    
 
 def refill(update, context, user):
-    sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
+    sheet.update_cell(onlineusers[user][0], 7, update.message.text)
     update.message.reply_text("Номер паливної картки")
     onlineusers[user][1]+=1    
 
 def fuelcard(update, context, user):
-    sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
+    sheet.update_cell(onlineusers[user][0], 8, update.message.text)
     context.bot.send_message(chat_id=update.effective_chat.id, text = "Вид палива", reply_markup=ReplyKeyboardMarkup([[KeyboardButton("ДП")],[KeyboardButton("ДП+")],[KeyboardButton("A95")],[KeyboardButton("A95+")]]))
     onlineusers[user][1]+=1    
 
 def fueltype(update, context, user):
-    sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
-    update.message.reply_text("Кінцевий пробіг")
-    onlineusers[user][1]+=1    
+    text = update.message.text
+    if text == "ДП" or text=="ДП+" or text == "A95" or text == "A95+":
+        sheet.update_cell(onlineusers[user][0], 9, text)
+        update.message.reply_text("Кінцевий пробіг")
+        onlineusers[user][1]+=1    
+        return
+    context.bot.send_message(chat_id=update.effective_chat.id, text = "Виберіть вид палива із запропонованих", reply_markup=ReplyKeyboardMarkup([[KeyboardButton("ДП")],[KeyboardButton("ДП+")],[KeyboardButton("A95")],[KeyboardButton("A95+")]]))
+    
 
 def result(update, context, user):
-    sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
+    sheet.update_cell(onlineusers[user][0], 10, update.message.text)
     update.message.reply_text("Залишок")
     onlineusers[user][1]+=1    
 
 def remainder(update, context, user):
-    sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
+    sheet.update_cell(onlineusers[user][0], 11, update.message.text)
     update.message.reply_text("Кількість клієнтів")
     onlineusers[user][1]+=1    
 
 def clientsamount(update, context, user):
-    sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
+    sheet.update_cell(onlineusers[user][0], 12, update.message.text)
     context.bot.send_message(chat_id=update.effective_chat.id, text = "Дякую", reply_markup=ReplyKeyboardMarkup([[arrmsg]]))
     onlineusers.pop(user)
 
-func = [driver, car, route, refill, fuelcard, fueltype,result, remainder,  clientsamount]
+func = [driver, error, route, refill, fuelcard, fueltype,result, remainder,  clientsamount]
 
 def start(update, context):
     buttons = [[KeyboardButton(arrmsg)]]
