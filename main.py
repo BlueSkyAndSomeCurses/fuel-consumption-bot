@@ -21,6 +21,31 @@ inc = int(datasheet.cell(1,7).value)
 onlineusers = dict()
 database = dict()
 
+cars = [
+    [[InlineKeyboardButton("Volvo AT1609BI", callback_data = "Volvo AT1609BI")],
+    [InlineKeyboardButton("Volvo AT2463AI", callback_data = "Volvo AT2463AI")],
+    [InlineKeyboardButton("MB AT9564BH", callback_data = "MB AT9564BH")],
+    [InlineKeyboardButton("MB AT2569AB", callback_data = "MB AT2569AB")],
+    [InlineKeyboardButton("MB AT7143AI", callback_data = "MB AT7143AI")],
+    [InlineKeyboardButton("Вперед", callback_data = "forward")]
+    ],
+    [[InlineKeyboardButton("MB AT0638AP", callback_data = "MB AT0638AP")],
+    [InlineKeyboardButton("MB BC9613CH", callback_data = "MB BC9613CH")],
+    [InlineKeyboardButton("MB AT2133AP", callback_data = "MB AT2133AP")],
+    [InlineKeyboardButton("MB AT9780AP", callback_data = "MB AT9780AP")],
+    [InlineKeyboardButton("MB AT8993BT", callback_data = "MB AT8993BT")],
+    [InlineKeyboardButton("Назад", callback_data = "back"), InlineKeyboardButton("Вперед", callback_data = "forward")]
+    ],
+    [[InlineKeyboardButton("Renault AT4191AE", callback_data = "Renault AT4191AE")],
+    [InlineKeyboardButton("Renault AT1778EA", callback_data = "Renault AT1778EA")],
+    [InlineKeyboardButton("Renault AT1779EA", callback_data = "Renault AT1779EA")],
+    [InlineKeyboardButton("Renault AT4974EI", callback_data = "Renault AT4974EI")],
+    [InlineKeyboardButton("Renault AT1784EI", callback_data = "Renault AT1784EI")],
+    [InlineKeyboardButton("Назад", callback_data = "back")]
+    ],
+    
+        ]
+
 count = 1
 while datasheet.cell(count, 1).value:
     database[datasheet.cell(count,1).value] = [datasheet.cell(count,2).value,datasheet.cell(count,3).value, count] 
@@ -36,8 +61,29 @@ def driver(update, context, user):
     database[user][0] = msg
     datasheet.update_cell(database[user][2], 2, msg)
     onlineusers[user][1]+=1    
-    buttons = [[InlineKeyboardButton("aboba", callback_data = "fuzbeez")], [InlineKeyboardButton("asdfzxcvbee", callback_data = "asdf")]]
-    context.bot.send_message(chat_id=update.effective_chat.id, text = "Вкажіть назву авто", reply_markup=InlineKeyboardMarkup(buttons))
+    onlineusers[user].append(0)
+    context.bot.send_message(chat_id=update.effective_chat.id, text = "Вкажіть назву авто", reply_markup=InlineKeyboardMarkup(cars[0]))
+
+def carChoosing(update, context):
+    user = update.effective_user.username
+    query = update.callback_query.data
+
+
+    if "back" in query:
+        onlineusers[user][2]-=1
+        context.bot.edit_message_reply_markup(chat_id=update.effective_chat.id, message_id = update.callback_query.message.message_id, reply_markup=InlineKeyboardMarkup(cars[onlineusers[user][2]]))
+    elif "forward" in query:
+        onlineusers[user][2]+=1
+        context.bot.edit_message_reply_markup(chat_id=update.effective_chat.id, message_id = update.callback_query.message.message_id, reply_markup=InlineKeyboardMarkup(cars[onlineusers[user][2]]))
+        
+    else:
+        sheet.update_cell(onlineusers[user][0], 5, query)
+        database[user][1] = query
+        datasheet.update_cell(database[user][2], 3, query)
+        context.bot.send_message(chat_id=update.effective_chat.id, text = "Вкажіть Маршрут")
+        onlineusers[user][1]+=1    
+        
+        
     
 def car(update, context, user):
     msg = update.message.text
@@ -46,6 +92,8 @@ def car(update, context, user):
     datasheet.update_cell(database[user][2], 3, msg)
     update.message.reply_text("Вкажіть маршрут")
     onlineusers[user][1]+=1    
+
+
 
 def route(update, context, user):
     sheet.update_cell(onlineusers[user][0], onlineusers[user][1], update.message.text)
@@ -124,6 +172,7 @@ dp = updater.dispatcher
 
 dp.add_handler(telegram.ext.CommandHandler("start", start))
 dp.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text,  mainfunc))
+dp.add_handler(telegram.ext.CallbackQueryHandler(carChoosing))
 
 updater.start_polling()
 updater.idle()
