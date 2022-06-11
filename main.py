@@ -54,7 +54,6 @@ for i in range(len(rots)):
     rots[i] = rots[i][0:-1]
     routes[rots[i].replace(" ","").replace("-","").lower()] = rots[i]
 
-print(routes)
 rots.clear()
 
 count = 1
@@ -268,8 +267,6 @@ def updateFunction(user, update, context):
         datasheet.update_cell(database[user][2], 4, data[2])
         datasheet.update_cell(database[user][2], 5, data[4])
 
-        print(database)
-        print(data)
         
         routes = database[user][3]
         if not data[2] in routes:
@@ -285,20 +282,21 @@ def updateFunction(user, update, context):
     else:
         count = int(datasheet.cell(1,8).value)
         datasheet.update_cell(1,8, str(count+1))
-        database[user] = [data[0], data[1], count, data[2], data[4]]
+        database[user] = [data[0], data[1], count, [data[2]], [data[4]]]
 
         datasheet.update_cell(count, 1, user)
         datasheet.update_cell(count, 2, data[0])
         datasheet.update_cell(count, 3, data[1])
         datasheet.update_cell(count, 4, data[2])
         datasheet.update_cell(count, 5, data[4])
+
+    onlineusers.pop(user)
     
     buttons = [[KeyboardButton(arrmsg)]]
     context.bot.send_message(chat_id=update.effective_chat.id, text = "Дякую, наступного разу натисніть кнопу: я приїхав", reply_markup=ReplyKeyboardMarkup(buttons))
 
 func = [driver, error, route, refill, fuelcard, fueltype,result, remainder,  clientsamount, IneedChangeSomething, changeDriver, error, changeRoute, changeRefill, changeFuelcard, changeFueltype, changeResult, changRemainder, changeClientsAm]
 
-print(len(func))
 
 def start(update, context):
     buttons = [[KeyboardButton(arrmsg)]]
